@@ -18,7 +18,7 @@
 | Skill 名称 | `project-clean-room` |
 | 触发词 | 包含“净化”和“接管” |
 | 核心文件 | `project-clean-room/SKILL.md` |
-| 模板文件 | `project-clean-room/references/project-team-collaboration-template.md` |
+| 模板文件 | `project-clean-room/references/agent-team-collaboration-template.md` |
+| 对话级启用提示词 | `project-clean-room/references/chat-install-prompt.md` |
 | 私有内容 | 不包含具体项目上下文、内部链接、本地路径 |
-| 语言 | 面向中文产品团队，说明尽量使用中文 |
-
+| 语言 | 面向中文产品团队，说明尽量使用小白能复制粘贴的中文 |
