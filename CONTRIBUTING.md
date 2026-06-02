@@ -1,21 +1,24 @@
-# Contributing
+# 贡献说明
 
-Thanks for improving Project Clean Room Skill.
+感谢你改进“项目净化与接管 Skill”。
 
-## Contribution Rules
+## 贡献原则
 
-- Keep the skill generic.
-- Do not add private company context or project-specific facts.
-- Do not hardcode local file paths or private document URLs.
-- Keep `SKILL.md` concise.
-- Put reusable templates in `references/`.
-- Update `README.md` when installation or usage changes.
+- 保持 Skill 通用，不绑定任何具体项目。
+- 不要加入公司私有上下文、项目资料、业务数据或内部链接。
+- 不要写死个人本地路径。
+- `SKILL.md` 保持简洁，重点写触发规则、处理流程和输出要求。
+- 模板、示例、较长说明放在 `references/` 目录下。
+- 如果安装方式或使用方式变化，需要同步更新 `README.md`。
 
-## Quality Checklist
+## 提交前检查
 
-- `project-clean-room/SKILL.md` has valid YAML frontmatter.
-- The skill can work without knowing any specific project.
-- Trigger phrases are clear.
-- The workflow requires reading a project state file before continuing project work.
-- The project state template is reusable.
+| 检查项 | 要求 |
+|---|---|
+| Skill 名称 | `project-clean-room` |
+| 触发词 | 包含“净化”和“接管” |
+| 核心文件 | `project-clean-room/SKILL.md` |
+| 模板文件 | `project-clean-room/references/project-team-collaboration-template.md` |
+| 私有内容 | 不包含具体项目上下文、内部链接、本地路径 |
+| 语言 | 面向中文产品团队，说明尽量使用中文 |
 
