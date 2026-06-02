@@ -1,176 +1,250 @@
-# Project Clean Room Skill
+# 项目净化与接管 Skill
 
-`project-clean-room` is a generic AI Agent Skill for long-running project handoff and context cleanup.
+`project-clean-room` 是一个通用 AI Agent Skill，用于长期项目的上下文净化、跨窗口接管和团队协作延续。
 
-It helps teams stop relying on long chat history. Instead, the agent first reads a project state file, summarizes the current project state, and then continues the user's task from that source of truth.
+它不绑定任何具体项目，也不包含任何私有项目上下文。团队成员可以把它安装到自己的 AI 工具中，再在各自项目里维护一份“项目团队协作文件”。
 
-## What Problem It Solves
+## 一、这个 Skill 解决什么问题
 
-Long-running product, engineering, and business projects usually suffer from:
+长期项目用 AI 协作时，经常会出现这些问题：
 
-- slow or compacted conversations;
-- outdated context mixed with current decisions;
-- new AI chats that do not understand the project;
-- teammates repeating the same project background in WorkBuddy, Cursor, ChatGPT, or Codex;
-- inconsistent document output preferences.
+- 当前对话太长，AI 回答变慢；
+- 上下文被系统自动压缩，旧信息和新规则混在一起；
+- 新窗口不知道项目背景；
+- 新同事接手时需要反复解释项目；
+- WorkBuddy、Cursor、ChatGPT、Codex 等工具之间无法自然延续；
+- AI 输出文档风格不稳定。
 
-This skill introduces a simple pattern:
+这个 Skill 的解决方式是：
 
-1. Maintain one project state file.
-2. Use short trigger phrases such as `净化项目` or `接管项目`.
-3. Make the agent read the project state before continuing.
-4. Update the project state after major deliverables.
+1. 每个项目维护一份“项目团队协作文件”；
+2. 用户输入“净化”或“接管”即可触发 Skill；
+3. AI 先读取项目团队协作文件，再继续工作；
+4. 重要产出后更新项目团队协作文件。
 
-## Repository Structure
+## 二、核心概念
+
+### 1. 净化
+
+当用户对话中包含“净化”两个字时，触发净化流程。
+
+适用场景：
+
+- 当前窗口对话太长；
+- AI 回答开始变慢；
+- 上下文被压缩；
+- 项目资料和结论有点乱；
+- 需要整理一份可供后续接管的项目文件。
+
+运行结果：
+
+- 查找或生成当前项目文件夹下的“项目团队协作文件”；
+- 更新项目定位、范围、规则、输出偏好、已产出资料、下一步建议、未决问题；
+- 在对话窗口向用户说明本次净化做了什么；
+- 告诉用户这份文件如何支持当前窗口继续协作和其他窗口接管。
+
+### 2. 接管
+
+当用户对话中包含“接管”两个字时，触发接管流程。
+
+适用场景：
+
+- 新开窗口继续同一个项目；
+- 新同事接手项目；
+- 换一个 AI 工具继续项目；
+- 希望 AI 先学习项目背景再开始输出。
+
+运行结果：
+
+- 自动查找并学习项目团队协作文件；
+- 输出学习总结；
+- 说明对项目内容的理解；
+- 说明未来需要配合用户完成的工作项；
+- 询问用户是否确认理解正确。
+
+接管后必须向用户确认：
+
+> 这是我学习《项目团队协作文件》内容后，对项目内容的理解，以及我未来需要配合你的工作项。你确认我理解得是否正确？
+
+## 三、仓库结构
 
 ```text
 project-clean-room/
 ├── SKILL.md
 └── references/
-    └── project-state-template.md
+    └── project-team-collaboration-template.md
 ```
 
-This follows the common Skill pattern used by modern agent tools: each skill is a directory containing a `SKILL.md` file with YAML frontmatter and Markdown instructions.
-
-## Who Should Use It
-
-| User | Recommended Use |
+| 文件 | 用途 |
 |---|---|
-| Product managers | Use it to keep PRD, reports, process docs, and project knowledge consistent across long AI conversations. |
-| Project owners | Use it as a lightweight project handoff protocol. |
-| Cursor users | Use the project state template with Cursor Chat, or convert the skill into a Cursor Project Rule. |
-| Codex users | Install the skill into a local skills directory. |
-| WorkBuddy / ChatGPT users | Use the prompts and project state template, even if the tool does not support local skills. |
+| `project-clean-room/SKILL.md` | Skill 本体，定义触发词、净化流程、接管流程和输出规则 |
+| `project-clean-room/references/project-team-collaboration-template.md` | 项目团队协作文件模板，可复制到任意项目中使用 |
 
-## Core Trigger Phrases
+## 四、如何安装
 
-| Trigger | When to Use |
-|---|---|
-| `净化项目` | Current conversation is long, slow, or compacted. |
-| `接管项目` | New chat, new teammate, or new AI tool needs to take over. |
-| `净化{项目名}项目` | Same as cleanup, but for a named project. |
-| `接管{项目名}项目` | Same as takeover, but for a named project. |
+### 1. Codex
 
-## Installation
-
-### Codex
-
-Copy the skill folder into your Codex skills directory:
+把 `project-clean-room` 文件夹复制到本机 Codex skills 目录：
 
 ```bash
 cp -R project-clean-room ~/.codex/skills/
 ```
 
-Restart Codex or open a new conversation if your environment only loads skills at session start.
+如果当前会话没有自动加载新 Skill，重新打开一个对话窗口即可。
 
-### Cursor
+### 2. Cursor
 
-Cursor users can use this in two ways.
+Cursor 有两种用法。
 
-Simple mode:
+#### 小白用法：Chat + 项目团队协作文件
 
-1. Copy `references/project-state-template.md` into your project.
-2. Rename it to `{project-name}-current-state.md` or `当前协作状态.md`.
-3. In Cursor Chat, mention the file and paste:
-
-```text
-接管项目。请先读取 @当前协作状态.md，再总结当前项目状态，然后继续处理：{your task}
-```
-
-Project Rule mode:
-
-1. Create a Cursor Project Rule.
-2. Use `project-clean-room/SKILL.md` as the rule reference.
-3. Tell Cursor that when the user says `净化项目` or `接管项目`, it must first read the project state file.
-
-### WorkBuddy / ChatGPT / Other AI Tools
-
-If the tool does not support local skills, use the prompt pattern directly:
+1. 把 `project-team-collaboration-template.md` 复制到自己的项目文件夹；
+2. 重命名为 `项目团队协作文件.md`；
+3. 在 Cursor Chat 中输入：
 
 ```text
-接管项目。请先读取这份《项目当前协作状态》：{state document link or pasted content}。
-读取后先用 5 条以内总结当前项目状态，再继续帮我处理：{current task}。
+接管。请先读取 @项目团队协作文件.md，然后输出你对项目的理解和未来需要协助我的工作项，并让我确认你的理解是否正确。
 ```
 
-If the tool cannot open the link, paste the state file content into the chat.
+#### 进阶用法：Cursor Project Rule
 
-## Create a Project State File
+把 `project-clean-room/SKILL.md` 的规则沉淀到 Cursor Project Rule 中。
 
-Start from:
+规则核心：
+
+- 用户消息包含“净化”时，执行净化流程；
+- 用户消息包含“接管”时，执行接管流程；
+- 执行前必须读取项目团队协作文件；
+- 重要产出后提醒更新项目团队协作文件。
+
+### 3. WorkBuddy
+
+如果 WorkBuddy 不支持安装 Skill，可以直接使用提示词。
+
+净化提示词：
 
 ```text
-project-clean-room/references/project-state-template.md
+净化。请先在当前项目资料中查找或生成《项目团队协作文件》，用于支持当前窗口后续协作和其他窗口接管。完成后请说明你生成或更新了什么、文件有什么用途、我下一步怎么使用。
 ```
 
-The state file should include:
+接管提示词：
 
-- project positioning;
-- current scope;
-- key rules;
-- output preferences;
-- existing deliverables and links;
-- directory or document structure;
-- next recommended work;
-- open questions.
+```text
+接管。请先学习我提供的《项目团队协作文件》，然后输出你对项目内容的理解，以及未来需要配合我完成的工作项。最后请问我：这是我学习《项目团队协作文件》内容后对项目内容的理解，和我未来需要配合你的工作项，你确认我理解得是否正确？
+```
 
-Keep it short and current. Do not paste long historical chat logs into the state file.
+如果 WorkBuddy 无法读取文件或链接，就把“项目团队协作文件”的正文复制粘贴给它。
 
-## Recommended Workflow
+### 4. ChatGPT 或其他 AI
 
-| Step | Action |
+如果工具不支持 Skill，也可以使用同样的提示词。
+
+推荐方式：
+
+1. 先粘贴项目团队协作文件正文；
+2. 再输入“接管”；
+3. 让 AI 输出学习总结并请你确认。
+
+## 五、如何创建项目团队协作文件
+
+从模板开始：
+
+```text
+project-clean-room/references/project-team-collaboration-template.md
+```
+
+复制到自己的项目文件夹后，改名为：
+
+```text
+项目团队协作文件.md
+```
+
+建议填写内容：
+
+| 模块 | 写什么 |
 |---|---|
-| 1 | Create or update the project state file. |
-| 2 | Start a new AI chat or continue a long chat. |
-| 3 | Say `接管项目` or `净化项目`. |
-| 4 | Provide the state file path, file mention, link, or pasted content. |
-| 5 | Ask the AI to summarize the current state. |
-| 6 | Continue your actual task. |
-| 7 | After major outputs, update the state file. |
+| 文件用途 | 说明这份文件用于净化和接管 |
+| 固定触发语 | 净化、接管 |
+| 项目定位 | 项目是什么、不是什么、当前目标 |
+| 当前范围 | 当前阶段做什么、不做什么 |
+| 关键规则 | 业务规则、判断逻辑、字段映射、异常规则 |
+| 输出偏好 | 文档风格、禁用内容、评审对象、输出格式 |
+| 已产出资料 | 文档链接、本地路径、用途 |
+| 项目资料目录 | 项目资料放在哪里，每个目录放什么 |
+| 后续工作项 | 智能体未来需要协助完成什么 |
+| 未决问题 | 需要业务、研发、测试、领导确认什么 |
 
-## Example Prompts
+## 六、推荐工作流
 
-### Take Over a Project
+| 步骤 | 操作 |
+|---|---|
+| 1 | 在项目文件夹中放置或创建《项目团队协作文件》 |
+| 2 | 当前窗口变慢或上下文混乱时，输入“净化” |
+| 3 | AI 更新项目团队协作文件，并解释净化结果 |
+| 4 | 新窗口继续项目时，输入“接管” |
+| 5 | AI 学习项目团队协作文件，输出理解总结 |
+| 6 | 用户确认理解是否正确 |
+| 7 | 用户确认后，AI 继续协助输出 PRD、方案、汇报、规则、测试材料等 |
+
+## 七、示例
+
+### 当前窗口净化
+
+用户输入：
 
 ```text
-接管项目。请先读取 @当前协作状态.md，再用 5 条以内总结项目当前状态，然后继续帮我处理：输出本周项目汇报材料。
+净化
 ```
 
-### Clean Up a Long Conversation
+AI 应输出：
+
+- 找到或生成了哪份项目团队协作文件；
+- 文件里沉淀了哪些内容；
+- 以后当前窗口如何继续协作；
+- 其他窗口如何通过“接管”继续工作。
+
+### 新窗口接管
+
+用户输入：
 
 ```text
-净化项目。请重新读取 @当前协作状态.md，以状态文件和我最新输入为准，旧聊天只作为参考。继续帮我处理：完善 PRD 的异常场景。
+接管
 ```
 
-### Create a State File
+AI 应输出：
 
-```text
-请基于当前项目资料创建《当前协作状态.md》，内容包括项目定位、当前范围、关键规则、输出偏好、已产出资料、资料目录、下一步建议和未决问题。不要复制长篇聊天记录。
-```
+- 我对项目定位的理解；
+- 我对当前范围的理解；
+- 我对关键规则和输出偏好的理解；
+- 我未来需要配合你的工作项；
+- 我还需要你确认的问题；
+- 请用户确认理解是否正确。
 
-## What Not To Do
+## 八、注意事项
 
-- Do not copy one project's state file into another project without replacing the project facts.
-- Do not put private project context into a public GitHub skill.
-- Do not treat the skill as a replacement for project documentation.
-- Do not rely on chat history when a project state file exists.
+- 不要把某个项目的私有上下文放进这个公开 Skill 仓库；
+- 不要把一个项目的团队协作文件直接复制给另一个项目使用；
+- 可以复用模板结构，但必须替换项目事实；
+- 项目团队协作文件只沉淀当前有效信息，不要复制长篇历史聊天；
+- 如果 AI 的旧聊天记忆和项目团队协作文件冲突，以项目团队协作文件和用户最新输入为准。
 
-## Design References
+## 九、设计参考
 
-This repository follows common Skill packaging practices:
+本仓库采用常见 Skill 项目结构：
 
-- a named skill directory;
-- a required `SKILL.md`;
-- YAML frontmatter with `name` and `description`;
-- optional reference files loaded only when needed.
+- 一个 Skill 一个目录；
+- 目录内包含 `SKILL.md`；
+- `SKILL.md` 使用 YAML frontmatter；
+- 模板和长说明放到 `references` 下。
 
-Related references:
+参考资料：
 
-- GitHub Copilot Custom Skills documentation: https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/skills
-- GitHub Copilot Agent Skills documentation: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-skills
-- Anthropic public skills repository: https://github.com/anthropics/skills
+- GitHub Copilot Custom Skills: https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/skills
+- GitHub Copilot Agent Skills: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-skills
+- Anthropic skills: https://github.com/anthropics/skills
 - Awesome Claude Skills: https://github.com/ComposioHQ/awesome-claude-skills
 
-## License
+## 十、许可证
 
 MIT
 
