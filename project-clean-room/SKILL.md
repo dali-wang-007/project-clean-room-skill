@@ -1,57 +1,183 @@
 ---
 name: project-clean-room
-description: Use when the user says 净化项目, 接管项目, 净化{项目名}项目, 接管{项目名}项目, or asks to continue a long-running project from a project state file, GitHub-shared skill, Cursor rule, WorkBuddy prompt, or compacted context.
+description: Use when 用户消息中包含“净化”或“接管”，或用户要求基于项目团队协作文件进行上下文净化、项目接管、跨窗口接续、WorkBuddy/Cursor/Codex/ChatGPT 项目协作。
 ---
 
-# Project Clean Room
+# 项目净化与接管 Skill
 
-## Purpose
+## 一、Skill 定位
 
-Use this skill to continue or hand over long-running project work without relying on old chat history. The project state file is the source of truth. Chat history is secondary.
+这个 Skill 用于长期项目中的 AI 协作延续。
 
-This skill is generic. It must not assume any specific project, company, business domain, local path, or document URL.
+它不是压缩聊天记录，也不是保存某个项目的私有上下文。它的核心是：让智能体优先读取当前项目文件夹中的“项目团队协作文件”，再继续当前窗口的净化或新窗口的项目接管。
 
-## Trigger Phrases
+本 Skill 是通用 Skill，不得假设任何具体项目、公司、业务领域、本地路径或文档链接。
 
-| User phrase | Meaning | Required behavior |
+## 二、触发规则
+
+| 用户消息包含 | 触发流程 | 说明 |
 |---|---|---|
-| `净化项目` | Continue the current project after a long or compacted conversation. | Ask for, locate, or read the project state file; then continue from it. |
-| `接管项目` | Take over a project in a new chat, new tool, or new team context. | Read the project state file; summarize the current state; then continue the user's task. |
-| `净化{项目名}项目` | Same as `净化项目`, with a named project. | Use the named project's state file if available. |
-| `接管{项目名}项目` | Same as `接管项目`, with a named project. | Use the named project's state file if available. |
+| 净化 | 净化流程 | 当前窗口已经变长、变慢、上下文被压缩或信息混乱时使用 |
+| 接管 | 接管流程 | 新窗口、新工具、新同事或新智能体接手同一项目时使用 |
 
-## Required Workflow
+只要用户对话中包含“净化”或“接管”，就进入本 Skill 的判断流程。
 
-1. Identify whether the user wants cleanup (`净化`) or takeover (`接管`).
-2. Find the project state source:
-   - explicit file path;
-   - attached file;
-   - pasted state text;
-   - shared document link the tool can access;
-   - a project file with a name like `当前协作状态`, `project-state`, `handoff`, or `context`.
-3. If the state source is missing, ask the user to provide it or offer to create one from available project materials.
-4. Read the state source before answering the project task.
-5. Treat the state source and the latest user message as higher priority than old chat history.
-6. If old chat history conflicts with the state source, follow the state source unless the user explicitly updates it.
-7. After major outputs, remind or help the user update the project state with:
-   - new deliverables and links;
-   - changed rules or preferences;
-   - decisions and open questions;
-   - recommended next steps.
+如果用户同时提到“净化”和“接管”，优先执行“接管流程”，因为接管需要先完整学习项目团队协作文件。
 
-## Output Rules
+如果用户只是日常表达中偶然出现这两个词，但明显不是项目协作语境，应简短确认用户是否要执行项目净化或项目接管，不要擅自改写项目文件。
 
-When producing formal project documents:
+## 三、项目团队协作文件
 
-- Do not include AI work-process explanations unless the user asks for them.
-- Do not show document metadata time in the body, such as output time, creation time, generation time, or last updated time. Use timestamps only for file naming or backend file management.
-- Do not include visible code blocks in business-facing formal documents unless the user asks for technical documentation.
-- Prefer product-ready structure: goals, scope, users, process, rules, fields, exceptions, metrics, validation, and open questions.
-- If the user's statement may be wrong, make a product judgment first instead of simply agreeing.
+“项目团队协作文件”是本 Skill 的核心产物和核心输入。
 
-## Project State Template
+它用于支持：
 
-If the user needs a state file, use `references/project-state-template.md` as the starting structure. Fill it with the user's project facts only.
+- 当前窗口的项目净化；
+- 新窗口的项目接管；
+- 新同事理解项目背景；
+- 不同 AI 工具之间延续协作；
+- 项目资料、输出偏好、待办事项和未决问题的持续沉淀。
 
-Do not copy another project's context into a new project. Reuse the structure, not the facts.
+默认文件名建议：
+
+- `项目团队协作文件.md`
+- `{项目名}-项目团队协作文件.md`
+- `{项目编号}项目团队协作文件.md`
+
+如果用户项目中已经有类似文件，例如“当前协作状态”“项目交接文件”“handoff”“project-state”“context”，可视为项目团队协作文件。
+
+如果项目文件夹中没有项目团队协作文件，应优先创建一份。模板见：`references/project-team-collaboration-template.md`。
+
+## 四、净化流程
+
+当用户消息中包含“净化”时，按以下流程执行。
+
+1. 识别当前项目文件夹。
+2. 查找项目团队协作文件。
+3. 如果找到，先读取项目团队协作文件。
+4. 如果没找到，基于当前项目资料和对话中已有稳定信息，创建项目团队协作文件。
+5. 更新或补齐项目团队协作文件，至少包含：
+   - 项目定位；
+   - 当前范围；
+   - 关键规则；
+   - 输出偏好；
+   - 已产出资料；
+   - 后续协作规则；
+   - 下一步建议；
+   - 未决问题。
+6. 在对话窗口中向用户说明本次净化做了什么。
+7. 输出项目团队协作文件的位置、用途和下一步使用方式。
+
+### 净化流程必须输出给用户的内容
+
+净化完成后，必须在对话窗口中输出：
+
+1. 已找到或已生成的项目团队协作文件名称；
+2. 项目团队协作文件的位置；
+3. 这份文件未来如何支持当前窗口继续协作；
+4. 这份文件未来如何支持其他窗口或其他智能体接管；
+5. 对“净化”这个技能的简短说明；
+6. 用户下一步可以怎么说。
+
+推荐表达：
+
+“我已完成项目净化。后续当前窗口会以项目团队协作文件为主，旧聊天记录只作为参考。其他窗口输入‘接管’后，也可以先读取这份项目团队协作文件，再继续配合你工作。”
+
+## 五、接管流程
+
+当用户消息中包含“接管”时，按以下流程执行。
+
+1. 识别当前项目文件夹。
+2. 自动查找项目团队协作文件。
+3. 如果找到，先完整读取项目团队协作文件。
+4. 如果没找到，向用户说明缺少项目团队协作文件，并请求用户提供或允许创建。
+5. 学习项目团队协作文件后，输出学习总结。
+6. 学习总结必须包括：
+   - 对项目定位的理解；
+   - 对当前项目范围的理解；
+   - 对关键规则和输出偏好的理解；
+   - 对已产出资料的理解；
+   - 对未来需要协助用户完成的工作项的理解；
+   - 当前仍需确认的问题。
+7. 输出确认语，让用户判断理解是否正确。
+
+### 接管流程必须输出给用户的确认语
+
+接管总结后，必须向用户确认：
+
+“这是我学习《项目团队协作文件》内容后，对项目内容的理解，以及我未来需要配合你的工作项。你确认我理解得是否正确？”
+
+在用户确认前，不要直接大规模改写正式项目资料。用户确认后，再继续执行具体任务。
+
+## 六、使用场景
+
+| 场景 | 用户可以怎么说 | 智能体应做什么 |
+|---|---|---|
+| 当前窗口太长，回答变慢 | 净化 | 生成或更新项目团队协作文件，并说明净化结果 |
+| 上下文压缩后继续工作 | 净化一下这个项目 | 读取项目团队协作文件，以文件为准继续 |
+| 新开窗口继续同一项目 | 接管 | 自动学习项目团队协作文件，输出学习总结并请用户确认 |
+| 新同事加入项目 | 接管这个项目 | 读取项目团队协作文件，说明项目理解和未来协作事项 |
+| 换工具继续项目 | 接管 | 在新工具中先读取项目团队协作文件，再继续工作 |
+| 项目资料混乱 | 帮我净化当前项目 | 整理项目团队协作文件，沉淀当前稳定信息 |
+
+## 七、如何使用
+
+### 当前窗口净化
+
+用户输入：
+
+“净化”
+
+智能体应：
+
+1. 查找或生成项目团队协作文件；
+2. 更新协作文件；
+3. 说明文件位置和用途；
+4. 告诉用户后续如何继续协作。
+
+### 新窗口接管
+
+用户在同一项目文件夹的新窗口输入：
+
+“接管”
+
+智能体应：
+
+1. 自动读取项目团队协作文件；
+2. 输出学习总结；
+3. 明确未来要协助用户完成的工作项；
+4. 请求用户确认理解是否正确。
+
+### 如果没有项目团队协作文件
+
+智能体应说明：
+
+“当前项目文件夹下未找到项目团队协作文件。我可以先根据现有资料创建一份，用于后续净化和接管。是否现在创建？”
+
+如果用户同意，使用 `references/project-team-collaboration-template.md` 作为模板创建。
+
+## 八、正式文档输出规则
+
+当智能体产出正式项目文档时，必须遵守：
+
+- 不在正文中展示文档元信息时间，例如输出时间、创建时间、生成时间、最后更新时间；
+- 不写 AI 工作过程，除非用户明确要求；
+- 不使用可见代码块，除非是技术文档或用户明确要求；
+- 优先使用产品经理可交付结构：目标、范围、角色、流程、规则、字段、异常、指标、验收、待确认问题；
+- 如果用户说法可能不准确，应先做产品判断，再执行。
+
+## 九、维护规则
+
+每次完成重要产出后，应提醒用户是否更新项目团队协作文件。
+
+需要更新的内容包括：
+
+- 新产出的文档、链接或本地路径；
+- 新增或变化的业务规则；
+- 用户新增的输出偏好；
+- 新的待办事项；
+- 新的未决问题；
+- 下一步建议。
+
+不要把长篇历史聊天记录直接复制进项目团队协作文件。项目团队协作文件只沉淀当前仍然有效、可复用、可接管的信息。
 
