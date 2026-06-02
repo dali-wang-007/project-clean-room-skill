@@ -44,8 +44,12 @@
 | 接管 | 支持 | 推荐给小白同事，最稳 |
 | /净化 | 支持 | 适合习惯斜杠命令的人，即使 `/` 菜单没有显示也可以直接发 |
 | /接管 | 支持 | 适合习惯斜杠命令的人，即使 `/` 菜单没有显示也可以直接发 |
+| $project-clean-room 净化 | 支持 | 适合支持 `$skill-name` 显式调用的工具 |
+| $project-clean-room 接管 | 支持 | 适合支持 `$skill-name` 显式调用的工具 |
 
-结论：能在 `/` 菜单里找到当然可以点；找不到也没关系，直接把 `/净化`、`/接管`、`净化` 或 `接管` 发出去即可。
+结论：能在 `/` 菜单里找到当然可以点；找不到也没关系，直接把 `净化`、`接管`、`/净化`、`/接管`、`$project-clean-room 净化` 或 `$project-clean-room 接管` 发出去即可。
+
+需要注意：是否能在 `/` 菜单中搜索到，取决于具体 AI 工具的产品机制。这个仓库已经补充了 `agents/openai.yaml`，用于给支持 Skill UI 展示的工具提供名称、简介和默认提示词，但它仍不能强制所有工具把 Skill 显示成 `/净化` 或 `/接管` 菜单项。
 
 ## 对话级启用提示词
 
@@ -61,7 +65,8 @@
 触发规则：
 1. 只要我的消息中包含“净化”或“/净化”，你就执行净化流程。
 2. 只要我的消息中包含“接管”或“/接管”，你就执行接管流程。
-3. 如果工具的 `/` 菜单里查不到这个 Skill，也不影响执行；我直接输入“净化”“接管”“/净化”或“/接管”都应触发。
+3. 如果工具支持 `$skill-name` 显式调用，我输入 `$project-clean-room 净化` 或 `$project-clean-room 接管` 也应触发。
+4. 如果工具的 `/` 菜单里查不到这个 Skill，也不影响执行；我直接输入“净化”“接管”“/净化”“/接管”“$project-clean-room 净化”或“$project-clean-room 接管”都应触发。
 
 净化流程：
 1. 先查找当前项目或任务对应的《Agent团队协作文件》。
@@ -181,6 +186,8 @@ project-clean-room-skill/
 ├── CONTRIBUTING.md
 ├── LICENSE
 └── project-clean-room/
+    ├── agents/
+    │   └── openai.yaml
     ├── SKILL.md
     └── references/
         ├── agent-team-collaboration-template.md
@@ -192,6 +199,7 @@ project-clean-room-skill/
 | 文件 | 作用 |
 |---|---|
 | `project-clean-room/SKILL.md` | Skill 本体，给支持 Skill 的工具读取，定义触发条件、执行流程和输出规则 |
+| `project-clean-room/agents/openai.yaml` | UI 元信息，给支持 Skill 展示的工具提供名称、简介和默认提示词 |
 | `project-clean-room/references/agent-team-collaboration-template.md` | 《Agent团队协作文件》模板，复制到具体项目或任务目录后填写 |
 | `project-clean-room/references/chat-install-prompt.md` | 对话级启用提示词，给不支持安装 Skill 的工具使用 |
 | `README.md` | 给团队成员看的使用说明 |
