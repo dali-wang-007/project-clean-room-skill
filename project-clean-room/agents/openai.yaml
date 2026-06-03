@@ -1,6 +1,6 @@
 interface:
-  display_name: "项目净化与接管"
-  short_description: "整理协作状态，支持跨窗口接管。"
+  display_name: "AI 项目协作接续"
+  short_description: "让长期项目可净化、可接管、可接续。"
   default_prompt: "请使用 $project-clean-room，基于当前项目或任务的 Agent团队协作文件，执行净化或接管。"
 policy:
   allow_implicit_invocation: true
